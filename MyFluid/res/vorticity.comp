@@ -39,7 +39,7 @@ void main(){
 
 		f *= cellSize * vortC * vec2(1, -1) / sqrt(max(dot(f, f), 0.0002));
 
-		col += vec4( f * timeStep * 1, 0, 0 );
+		col += vec4( f * timeStep * 3, 0, 0 );
 
 	}
 

@@ -315,7 +315,7 @@ int main()
         glViewport(0, 0, SCR_WIDTH * dy_factor, SCR_WIDTH * dy_factor);
         auto _cur_timer = std::chrono::steady_clock::now();
         auto _elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(_cur_timer - _pre_timer).count();
-       // std::cout << 1000.0f / _elapsed_time << std::endl;
+       std::cout << 1000.0f / _elapsed_time << std::endl;
         _pre_timer = _cur_timer;
 
         // per-frame time logic

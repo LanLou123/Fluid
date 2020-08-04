@@ -33,7 +33,7 @@ void main()
 
 	}
 
-    col = vec4(col.rgb/1.50, 1.0);
+    col = vec4(col.rgb/2.50, 1.0);
     
     FragColor = col;
 }
