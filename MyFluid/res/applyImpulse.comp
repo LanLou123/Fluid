@@ -1,0 +1,32 @@
+#version 430 core
+
+
+layout (local_size_x = 16, local_size_y = 16) in;
+layout (rgba32f, binding = 0) uniform image2D img_output;
+
+uniform sampler2D input;
+
+uniform vec2 impulsePosition;
+uniform float fillColor;
+uniform float timeStep;
+
+void main(){
+
+	float radius = 80.0;
+
+	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+
+	vec4 col = vec4(vec3(0.0),1.0);
+	
+	col = texelFetch(input, pixel_coords, 0);
+
+	float d = distance(impulsePosition, pixel_coords);
+	if(d<radius){
+
+		float a = (radius - d) * 0.5;
+        a = min(1/a, 1.0);
+		col += vec4(vec3(fillColor) , 1);
+	}
+
+	imageStore(img_output, pixel_coords, col);
+}

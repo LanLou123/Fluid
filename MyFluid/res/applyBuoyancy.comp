@@ -1,0 +1,33 @@
+#version 430 core
+
+
+layout (local_size_x = 16, local_size_y = 16) in;
+layout (rgba32f, binding = 0) uniform image2D img_output;
+
+uniform sampler2D velocityPing;
+uniform sampler2D temperaturePing;
+uniform sampler2D densityPing;
+
+
+
+uniform vec2 res;
+uniform float time;
+uniform float timeStep;
+
+void main(){
+
+	float AmbientTemperature = 0.0;
+	float Sigma = 0.3;
+	float Kappa = 0.05;
+
+	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+	float T = texelFetch(temperaturePing, pixel_coords, 0).r;
+	vec4 V = texelFetch(velocityPing, pixel_coords, 0);
+	vec4 col = vec4(V);
+	if(T>AmbientTemperature){
+		float D = texelFetch(densityPing, pixel_coords, 0).x;
+		col +=  (timeStep * (T - AmbientTemperature) * Sigma - D * Kappa ) * vec4(0, 1, 0, 1);
+	}
+
+	imageStore(img_output, pixel_coords, col);
+}

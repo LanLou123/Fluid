@@ -1,0 +1,32 @@
+#version 430 core
+
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout (rgba32f, binding = 0) uniform image2D img_output;
+
+uniform sampler2D velocityPing;
+uniform sampler2D source;
+uniform sampler2D obstacle;
+
+uniform vec2 res;
+uniform float time;
+uniform float Dissipation;
+uniform float timeStep;
+
+
+
+void main(){
+	
+
+	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+	vec4 col = vec4(0,0,0,1);
+	float solid = texelFetch(obstacle, pixel_coords, 0).x;
+	if(solid>0){
+		vec2 u = texture(velocityPing, (pixel_coords + 0.5)/1024.0, 0).xy; // dammit u need to plus 0.5 in order to map image coordinate to sample coordinate, stucked me for days... this is just frustrating
+		vec2 coord = vec2(pixel_coords) - timeStep * u;
+		col = Dissipation * texture(source, (coord + 0.5)/1024.0);//texelFetch(source, ivec2(coord), 0);
+	}
+	
+	imageStore(img_output, pixel_coords, col);
+}

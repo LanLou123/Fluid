@@ -1,0 +1,42 @@
+#version 430 core
+
+layout (local_size_x = 16, local_size_y = 16) in;
+layout (rgba32f, binding = 0) uniform image2D img_output; // divergence
+
+uniform sampler2D velocityPing;
+uniform sampler2D obstacle;
+uniform float timeStep;
+uniform float cellSize;
+
+void main(){
+
+	float halfInvCellSize = 0.52 * (1/cellSize);
+
+	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+	vec4 col = vec4(vec3(0),1.0);
+ 
+	vec2 vN = texelFetchOffset(velocityPing, pixel_coords, 0, ivec2(0, 1)).xy;
+	vec2 vS = texelFetchOffset(velocityPing, pixel_coords, 0, ivec2(0, -1)).xy;
+	vec2 vE = texelFetchOffset(velocityPing, pixel_coords, 0, ivec2(1, 0)).xy;
+	vec2 vW = texelFetchOffset(velocityPing, pixel_coords, 0, ivec2(-1, 0)).xy;
+
+	vec3 oN = texelFetchOffset(obstacle, pixel_coords, 0, ivec2(0, 1)).xyz;
+	vec3 oS = texelFetchOffset(obstacle, pixel_coords, 0, ivec2(0, -1)).xyz;
+	vec3 oE = texelFetchOffset(obstacle, pixel_coords, 0, ivec2(1, 0)).xyz;
+	vec3 oW = texelFetchOffset(obstacle, pixel_coords, 0, ivec2(-1, 0)).xyz;
+
+	if(oN.x == 0) vN.y = -vN.x;
+	if(oS.x == 0) vS.y = -vS.y;
+	if(oE.x == 0) vE.x = -vE.x ;
+	if(oW.x == 0) vW.x = -vW.x;
+
+	
+	if(pixel_coords.x == 0) vW.x= -vW.x;
+	if(pixel_coords.x >= 1024 - 1) vE.x = -vE.x;
+	if(pixel_coords.y == 0) vS.y = -vS.y;
+	if(pixel_coords.y >= 1024 - 1) vN.y = -vN.y;
+
+	col = vec4( halfInvCellSize * (vE.x - vW.x + vN.y - vS.y), 0.0, 0.0, 1.0);
+
+	imageStore(img_output, pixel_coords, col);
+}
