@@ -68,6 +68,9 @@
     <None Include="..\res\push.comp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\res\vorticity.comp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Fluid.cpp">

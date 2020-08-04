@@ -34,7 +34,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-unsigned int loadTexture(const char *path, bool gammaCorrection);
 unsigned int TextureFromFile(const string path, bool gamma = 0);
 //void renderQuad();
 
@@ -205,6 +204,7 @@ int main()
     // ---------------
 
     Shader shaderFluidAdvect("../res/advect.comp");
+    Shader shaderFluidVorticity("../res/vorticity.comp");
     Shader shaderFluidApplyBuo("../res/applyBuoyancy.comp");
     Shader shaderFluidApplyImp("../res/applyImpulse.comp");
     Shader shaderFluidCmpDiver("../res/computeDivergence.comp");
@@ -386,6 +386,21 @@ int main()
         glMemoryBarrier(GL_ALL_BARRIER_BITS);
         glDispatchCompute(tex_w / WORKGROUP_SIZE, tex_h / WORKGROUP_SIZE, 1);
         Density.swap();
+
+        // vorticity confinement
+        shaderFluidVorticity.use();
+        bindTexture_image(Velocity.pong_, 0);// output -- Velocity pong
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, Velocity.ping_);
+        shaderFluidVorticity.setInt("velocityPing", 1);// input -- velocity ping 
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, Obstacle);
+        shaderFluidVorticity.setInt("obstacle", 2);// input -- obstacle
+        shaderFluidVorticity.setFloat("cellSize", CellSize);
+        shaderFluidVorticity.setFloat("timeStep", TimeStep);
+        glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        glDispatchCompute(tex_w / WORKGROUP_SIZE, tex_h / WORKGROUP_SIZE, 1);
+        Velocity.swap();
 
         // apply buoyancy
         shaderFluidApplyBuo.use();
